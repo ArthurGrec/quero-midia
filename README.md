@@ -28,7 +28,7 @@ Nunca coloque esses valores em arquivos do repositório. O token não é exibido
 - Toda arte que exibe preço inclui: `* Valores válidos no momento da postagem e podem mudar sem aviso prévio.`
 - A segunda linha da ressalva usa a unidade exata da fonte, por exemplo: `Valores por pessoa, sujeitos à disponibilidade.`, `Valores por casal, sujeitos à disponibilidade.` ou `Valores por cabine, sujeitos à disponibilidade.`
 - Para produto vendido pelo Quero Abadá, o Story aponta para a página específica do produto. Quando não for vendido pelo Quero Abadá, aponta para o WhatsApp.
-- Story não é publicado enquanto o suporte a link clicável pela API não estiver confirmado e não houver autorização específica. Este publicador não possui comando de Story.
+- Story não é publicado enquanto o suporte a link clicável pela API não estiver confirmado e não houver autorização específica. O suporte técnico `--placement story` não constitui autorização: ele só pode ser usado em uma exceção expressa de Arthur, não envia link, legenda nem colaboradores e mantém fila/idempotência próprias.
 - A arte deve passar por revisão visual final, incluindo logos e selos exigidos pelo produto, antes de Arthur aprová-la.
 
 As regras de colaboradores são codificadas em `--content-policy` para evitar digitação ou fallback silencioso:

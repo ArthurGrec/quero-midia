@@ -96,8 +96,10 @@ class QueueItem:
     media: str
     caption: str
     scheduled_at: str
+    placement: str
     content_policy: str
     collaborators: tuple[str, ...]
+    story_baseline: tuple[str, ...] | None
     status: str
     approved_by: str | None
     approved_at: str | None
@@ -160,8 +162,10 @@ class Queue:
                 media TEXT NOT NULL,
                 caption TEXT NOT NULL,
                 scheduled_at TEXT NOT NULL,
+                placement TEXT NOT NULL DEFAULT 'feed',
                 content_policy TEXT NOT NULL DEFAULT 'other',
                 collaborators_json TEXT NOT NULL DEFAULT '[]',
+                story_baseline_json TEXT,
                 status TEXT NOT NULL CHECK(status IN ('draft','approved','published','failed')),
                 approved_by TEXT,
                 approved_at TEXT,
@@ -192,8 +196,10 @@ class Queue:
             "PRAGMA table_info(queue_items)"
         ).fetchall()}
         migrations = {
+            "placement": "TEXT NOT NULL DEFAULT 'feed'",
             "content_policy": "TEXT NOT NULL DEFAULT 'other'",
             "collaborators_json": "TEXT NOT NULL DEFAULT '[]'",
+            "story_baseline_json": "TEXT",
             "remote_container_id": "TEXT", "remote_media_id": "TEXT",
             "permalink": "TEXT", "publish_started_at": "TEXT",
             "publish_lock_owner": "TEXT", "publish_lock_at": "TEXT",
@@ -218,21 +224,25 @@ class Queue:
         self.connection.commit()
 
     def enqueue(self, piece_id: str, media: str, caption: str, scheduled_at: str,
-                content_policy: str = "other") -> QueueItem:
+                content_policy: str = "other", placement: str = "feed") -> QueueItem:
         if not piece_id.strip():
             raise ValidationError("identificador da peça é obrigatório")
         if content_policy not in CONTENT_POLICIES:
             raise ValidationError("política de conteúdo inválida")
-        validate_payload(media, caption, scheduled_at)
+        if placement not in {"feed", "story"}:
+            raise ValidationError("placement deve ser feed ou story")
+        validate_payload(media, caption, scheduled_at, placement=placement)
         collaborators = CONTENT_POLICIES[content_policy]
+        if placement == "story" and collaborators:
+            raise ValidationError("Story não aceita colaboradores neste fluxo")
         now = utc_now()
         try:
             self.connection.execute(
                 """INSERT INTO queue_items(
-                       piece_id,media,caption,scheduled_at,content_policy,
+                       piece_id,media,caption,scheduled_at,placement,content_policy,
                        collaborators_json,status,created_at,updated_at
-                   ) VALUES(?,?,?,?,?,?,?,?,?)""",
-                (piece_id, media, caption, scheduled_at, content_policy,
+                   ) VALUES(?,?,?,?,?,?,?,?,?,?)""",
+                (piece_id, media, caption, scheduled_at, placement, content_policy,
                  json.dumps(collaborators), "draft", now, now),
             )
             self.connection.commit()
@@ -240,7 +250,7 @@ class Queue:
             raise ValidationError(f"a peça {piece_id!r} já existe") from exc
         self.audit(piece_id, "draft_created", details={
             "scheduled_at": scheduled_at, "content_policy": content_policy,
-            "collaborators": list(collaborators),
+            "collaborators": list(collaborators), "placement": placement,
         })
         return self.get(piece_id)
 
@@ -302,6 +312,23 @@ class Queue:
         self.connection.commit()
         self.audit(piece_id, "container_created", details={"container_id": container_id})
 
+    def record_story_baseline(self, piece_id: str, story_ids: set[str]) -> None:
+        baseline = sorted(story_ids)
+        self.connection.execute(
+            "UPDATE queue_items SET story_baseline_json=?,updated_at=? WHERE piece_id=?",
+            (json.dumps(baseline), utc_now(), piece_id),
+        )
+        self.connection.commit()
+        self.audit(piece_id, "story_baseline_recorded", details={"story_ids": baseline})
+
+    def update_permalink(self, piece_id: str, permalink: str | None) -> QueueItem:
+        self.connection.execute(
+            "UPDATE queue_items SET permalink=?,updated_at=? WHERE piece_id=?",
+            (permalink, utc_now(), piece_id),
+        )
+        self.connection.commit()
+        return self.get(piece_id)
+
     def mark_published(self, piece_id: str, media_id: str, permalink: str | None,
                        *, reconciled: bool) -> QueueItem:
         now = utc_now()
@@ -336,6 +363,8 @@ class Queue:
     def _row_to_item(self, row: sqlite3.Row) -> QueueItem:
         values = dict(row)
         values["collaborators"] = tuple(json.loads(values.pop("collaborators_json")))
+        baseline = values.pop("story_baseline_json")
+        values["story_baseline"] = None if baseline is None else tuple(json.loads(baseline))
         return QueueItem(**values)
 
     def get(self, piece_id: str) -> QueueItem:
@@ -361,9 +390,10 @@ class Queue:
                  "details": json.loads(row["details_json"])} for row in rows]
 
 
-def validate_payload(media: str, caption: str, scheduled_at: str) -> None:
+def validate_payload(media: str, caption: str, scheduled_at: str,
+                     *, placement: str = "feed") -> None:
     validate_media_reference(media)
-    if not caption.strip():
+    if placement == "feed" and not caption.strip():
         raise ValidationError("legenda não pode ser vazia")
     if len(caption) > 2200:
         raise ValidationError("legenda excede 2.200 caracteres")
@@ -482,6 +512,16 @@ class InstagramClient:
             raise InstagramAPIError("criação do contêiner não retornou id")
         return container_id
 
+    def create_story_container(self, image_url: str) -> str:
+        payload = self._request(
+            "POST", "/" + urllib.parse.quote(self.credentials.user_id, safe="") + "/media",
+            {"image_url": image_url, "media_type": "STORIES"},
+        )
+        container_id = payload.get("id")
+        if not isinstance(container_id, str) or not container_id:
+            raise InstagramAPIError("criação do contêiner de Story não retornou id")
+        return container_id
+
     def get_container_status(self, container_id: str) -> str:
         payload = self._request("GET", "/" + urllib.parse.quote(container_id, safe=""),
                                 {"fields": "status_code"})
@@ -503,6 +543,20 @@ class InstagramClient:
     def get_media(self, media_id: str) -> dict[str, object]:
         return self._request("GET", "/" + urllib.parse.quote(media_id, safe=""),
                              {"fields": "id,permalink,media_type,timestamp"})
+
+    def get_media_without_permalink(self, media_id: str) -> dict[str, object]:
+        return self._request("GET", "/" + urllib.parse.quote(media_id, safe=""),
+                             {"fields": "id,media_type,timestamp"})
+
+    def list_active_story_ids(self) -> set[str]:
+        payload = self._request(
+            "GET", "/" + urllib.parse.quote(self.credentials.user_id, safe="") + "/stories",
+            {"fields": "id"},
+        )
+        return {
+            item["id"] for item in payload.get("data", [])
+            if isinstance(item, dict) and isinstance(item.get("id"), str)
+        }
 
     def find_recent_media(self, caption: str, not_before: str) -> dict[str, object] | None:
         payload = self._request(
@@ -553,7 +607,8 @@ class PublisherService:
     def dry_run(self, piece_id: str,
                 environment: Mapping[str, str] = os.environ) -> dict[str, object]:
         item = self._approved_item(piece_id)
-        validate_payload(item.media, item.caption, item.scheduled_at)
+        validate_payload(item.media, item.caption, item.scheduled_at,
+                         placement=item.placement)
         username = self._confirm_account(
             self.client_type(Credentials.from_environment(environment))
         )
@@ -562,12 +617,26 @@ class PublisherService:
         return {
             "mode": "dry-run", "piece_id": piece_id, "status": item.status,
             "account": "@" + username, "scheduled_at": item.scheduled_at,
+            "placement": item.placement,
             "collaborators": list(item.collaborators),
             "publishing_enabled": is_publishing_enabled(environment),
             "result": "validated; no media container created and nothing published",
         }
 
     def _reconcile(self, item: QueueItem, client: InstagramClient) -> QueueItem | None:
+        if item.placement == "story":
+            if item.story_baseline is None:
+                return None
+            new_ids = client.list_active_story_ids() - set(item.story_baseline)
+            if len(new_ids) == 1:
+                return self.queue.mark_published(
+                    item.piece_id, new_ids.pop(), None, reconciled=True
+                )
+            if len(new_ids) > 1:
+                raise InstagramAPIError(
+                    "reconciliação encontrou múltiplos Stories novos; nenhum POST executado"
+                )
+            return None
         if item.remote_media_id:
             media = client.get_media(item.remote_media_id)
             return self.queue.mark_published(
@@ -594,7 +663,8 @@ class PublisherService:
             raise PublishingDisabled(
                 "publicação bloqueada: INSTAGRAM_PUBLISHING_ENABLED não é true"
             )
-        validate_payload(item.media, item.caption, item.scheduled_at)
+        validate_payload(item.media, item.caption, item.scheduled_at,
+                         placement=item.placement)
         if urllib.parse.urlparse(item.media).scheme != "https":
             raise ValidationError("publicação real exige uma URL HTTPS pública da imagem")
         owner = self.queue.acquire_publish_lock(piece_id)
@@ -603,15 +673,23 @@ class PublisherService:
             self._confirm_account(client)
             self.media_validator.validate(item.media)
             item = self.queue.get(piece_id)
+            if item.placement == "story" and item.story_baseline is None:
+                self.queue.record_story_baseline(
+                    piece_id, client.list_active_story_ids()
+                )
+                item = self.queue.get(piece_id)
             reconciled = self._reconcile(item, client)
             if reconciled:
                 return reconciled
             container_id = item.remote_container_id
             if not container_id:
-                # Exatamente uma tentativa; rejeição de colaboradores não tem fallback.
-                container_id = client.create_image_container(
-                    item.media, item.caption, item.collaborators
-                )
+                if item.placement == "story":
+                    container_id = client.create_story_container(item.media)
+                else:
+                    # Exatamente uma tentativa; rejeição de colaboradores não tem fallback.
+                    container_id = client.create_image_container(
+                        item.media, item.caption, item.collaborators
+                    )
                 self.queue.record_container(piece_id, container_id)
             for attempt in range(12):
                 container_status = client.get_container_status(container_id)
@@ -640,11 +718,18 @@ class PublisherService:
                     return reconciled
                 self.queue.mark_failed(piece_id, "publishing_ambiguous")
                 raise
-            media = client.get_media(media_id)
-            return self.queue.mark_published(
-                piece_id, media_id,
-                media.get("permalink") if isinstance(media.get("permalink"), str) else None,
-                reconciled=False,
+            # Persiste o ID antes de qualquer leitura posterior: resposta de publish não se perde.
+            published = self.queue.mark_published(
+                piece_id, media_id, None, reconciled=False
+            )
+            try:
+                media = (client.get_media_without_permalink(media_id)
+                         if item.placement == "story" else client.get_media(media_id))
+            except InstagramAPIError:
+                return published
+            permalink = media.get("permalink")
+            return self.queue.update_permalink(
+                piece_id, permalink if isinstance(permalink, str) else None
             )
         finally:
             self.queue.release_publish_lock(piece_id, owner)
@@ -661,8 +746,9 @@ def build_parser() -> argparse.ArgumentParser:
     enqueue = commands.add_parser("enqueue", help="cria um item draft")
     enqueue.add_argument("--piece-id", required=True)
     enqueue.add_argument("--media", required=True)
-    enqueue.add_argument("--caption", required=True)
+    enqueue.add_argument("--caption", default="")
     enqueue.add_argument("--scheduled-at", required=True)
+    enqueue.add_argument("--placement", choices=("feed", "story"), default="feed")
     enqueue.add_argument("--content-policy", choices=sorted(CONTENT_POLICIES), default="other")
     approve = commands.add_parser("approve", help="aprova e registra o responsável")
     approve.add_argument("--piece-id", required=True)
@@ -683,7 +769,7 @@ def main(argv: list[str] | None = None) -> int:
         if arguments.command == "enqueue":
             result = queue.enqueue(
                 arguments.piece_id, arguments.media, arguments.caption,
-                arguments.scheduled_at, arguments.content_policy,
+                arguments.scheduled_at, arguments.content_policy, arguments.placement,
             )
         elif arguments.command == "approve":
             result = queue.approve(arguments.piece_id, arguments.approved_by)

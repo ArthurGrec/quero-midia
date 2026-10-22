@@ -16,6 +16,8 @@ class FakeClient:
     recent_media = None
     reject_container = False
     fail_publish = False
+    active_story_ids = {"story-old"}
+    story_appears_after_failure = False
 
     def __init__(self, credentials):
         self.credentials = credentials
@@ -28,6 +30,8 @@ class FakeClient:
         cls.recent_media = None
         cls.reject_container = False
         cls.fail_publish = False
+        cls.active_story_ids = {"story-old"}
+        cls.story_appears_after_failure = False
 
     def get_username(self):
         self.calls.append(("get_username",))
@@ -43,6 +47,10 @@ class FakeClient:
             raise InstagramAPIError("container rejected")
         return "container-123"
 
+    def create_story_container(self, image_url):
+        self.calls.append(("create_story_container", image_url))
+        return "story-container-123"
+
     def get_container_status(self, container_id):
         self.calls.append(("get_container_status", container_id))
         return "FINISHED"
@@ -50,12 +58,22 @@ class FakeClient:
     def publish_container(self, container_id):
         self.calls.append(("publish_container", container_id))
         if type(self).fail_publish:
+            if type(self).story_appears_after_failure:
+                type(self).active_story_ids.add("story-reconciled")
             raise InstagramAPIError("ambiguous transport failure")
         return "media-456"
 
     def get_media(self, media_id):
         self.calls.append(("get_media", media_id))
         return {"id": media_id, "permalink": "https://www.instagram.com/p/example/"}
+
+    def get_media_without_permalink(self, media_id):
+        self.calls.append(("get_media_without_permalink", media_id))
+        return {"id": media_id, "media_type": "IMAGE"}
+
+    def list_active_story_ids(self):
+        self.calls.append(("list_active_story_ids",))
+        return set(type(self).active_story_ids)
 
 
 class FakeMediaValidator:
@@ -219,6 +237,39 @@ class PublisherSafetyTests(unittest.TestCase):
         failed = self.queue.get(item.piece_id)
         self.assertEqual(failed.status, "failed")
         self.assertEqual(failed.failure_reason, "publishing_ambiguous")
+
+    def test_story_uses_stories_media_type_path_without_collaborators(self):
+        item = self.queue.enqueue(
+            "story-1", "https://cdn.example.com/story.jpg", "",
+            "2030-01-01T12:00:00-03:00", "other", "story",
+        )
+        self.queue.approve(item.piece_id, "Arthur")
+        result = self.service.publish(item.piece_id, self.enabled_environment())
+        calls = FakeClient.instances[0].calls
+        self.assertEqual(
+            [call for call in calls if call[0] == "create_story_container"],
+            [("create_story_container", "https://cdn.example.com/story.jpg")],
+        )
+        self.assertFalse(any(call[0] == "create_image_container" for call in calls))
+        self.assertEqual(len([call for call in calls if call[0] == "publish_container"]), 1)
+        self.assertEqual(result.status, "published")
+        self.assertEqual(result.placement, "story")
+        self.assertEqual(result.collaborators, ())
+        self.assertEqual(result.story_baseline, ("story-old",))
+
+    def test_story_ambiguous_response_reconciles_without_retry(self):
+        item = self.queue.enqueue(
+            "story-1", "https://cdn.example.com/story.jpg", "",
+            "2030-01-01T12:00:00-03:00", "other", "story",
+        )
+        self.queue.approve(item.piece_id, "Arthur")
+        FakeClient.fail_publish = True
+        FakeClient.story_appears_after_failure = True
+        result = self.service.publish(item.piece_id, self.enabled_environment())
+        calls = FakeClient.instances[0].calls
+        self.assertEqual(len([call for call in calls if call[0] == "publish_container"]), 1)
+        self.assertEqual(result.status, "published")
+        self.assertEqual(result.remote_media_id, "story-reconciled")
 
 
 if __name__ == "__main__":
