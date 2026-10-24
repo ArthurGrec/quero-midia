@@ -31,6 +31,7 @@ CONTENT_POLICIES = {
     "ship_sold_by_quero_abada": ("queroabada", "queronavio"),
     "carnival_lodging": ("queroabada",),
     "ship_not_sold_by_quero_abada": ("queronavio",),
+    "tourism_with_quero_abada": ("queroabada",),
     "other": (),
 }
 SAFE_FAILURE_CODES = {
@@ -99,6 +100,7 @@ class QueueItem:
     placement: str
     content_policy: str
     collaborators: tuple[str, ...]
+    media_items: tuple[str, ...]
     story_baseline: tuple[str, ...] | None
     status: str
     approved_by: str | None
@@ -113,6 +115,7 @@ class QueueItem:
     publish_started_at: str | None = None
     publish_lock_owner: str | None = None
     publish_lock_at: str | None = None
+    remote_child_container_ids: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -165,6 +168,7 @@ class Queue:
                 placement TEXT NOT NULL DEFAULT 'feed',
                 content_policy TEXT NOT NULL DEFAULT 'other',
                 collaborators_json TEXT NOT NULL DEFAULT '[]',
+                media_items_json TEXT NOT NULL DEFAULT '[]',
                 story_baseline_json TEXT,
                 status TEXT NOT NULL CHECK(status IN ('draft','approved','published','failed')),
                 approved_by TEXT,
@@ -179,6 +183,7 @@ class Queue:
                 publish_started_at TEXT,
                 publish_lock_owner TEXT,
                 publish_lock_at TEXT,
+                remote_child_container_ids_json TEXT NOT NULL DEFAULT '[]',
                 CHECK(status NOT IN ('approved','published') OR
                       (approved_by IS NOT NULL AND approved_at IS NOT NULL))
             );
@@ -199,10 +204,12 @@ class Queue:
             "placement": "TEXT NOT NULL DEFAULT 'feed'",
             "content_policy": "TEXT NOT NULL DEFAULT 'other'",
             "collaborators_json": "TEXT NOT NULL DEFAULT '[]'",
+            "media_items_json": "TEXT NOT NULL DEFAULT '[]'",
             "story_baseline_json": "TEXT",
             "remote_container_id": "TEXT", "remote_media_id": "TEXT",
             "permalink": "TEXT", "publish_started_at": "TEXT",
             "publish_lock_owner": "TEXT", "publish_lock_at": "TEXT",
+            "remote_child_container_ids_json": "TEXT NOT NULL DEFAULT '[]'",
         }
         for column, declaration in migrations.items():
             if column not in existing:
@@ -224,14 +231,17 @@ class Queue:
         self.connection.commit()
 
     def enqueue(self, piece_id: str, media: str, caption: str, scheduled_at: str,
-                content_policy: str = "other", placement: str = "feed") -> QueueItem:
+                content_policy: str = "other", placement: str = "feed",
+                media_items: tuple[str, ...] | None = None) -> QueueItem:
         if not piece_id.strip():
             raise ValidationError("identificador da peça é obrigatório")
         if content_policy not in CONTENT_POLICIES:
             raise ValidationError("política de conteúdo inválida")
-        if placement not in {"feed", "story"}:
-            raise ValidationError("placement deve ser feed ou story")
-        validate_payload(media, caption, scheduled_at, placement=placement)
+        if placement not in {"feed", "story", "carousel"}:
+            raise ValidationError("placement deve ser feed, story ou carousel")
+        carousel_items = tuple(media_items or ())
+        validate_payload(media, caption, scheduled_at, placement=placement,
+                         media_items=carousel_items)
         collaborators = CONTENT_POLICIES[content_policy]
         if placement == "story" and collaborators:
             raise ValidationError("Story não aceita colaboradores neste fluxo")
@@ -240,10 +250,10 @@ class Queue:
             self.connection.execute(
                 """INSERT INTO queue_items(
                        piece_id,media,caption,scheduled_at,placement,content_policy,
-                       collaborators_json,status,created_at,updated_at
-                   ) VALUES(?,?,?,?,?,?,?,?,?,?)""",
+                       collaborators_json,media_items_json,status,created_at,updated_at
+                   ) VALUES(?,?,?,?,?,?,?,?,?,?,?)""",
                 (piece_id, media, caption, scheduled_at, placement, content_policy,
-                 json.dumps(collaborators), "draft", now, now),
+                 json.dumps(collaborators), json.dumps(carousel_items), "draft", now, now),
             )
             self.connection.commit()
         except sqlite3.IntegrityError as exc:
@@ -251,6 +261,7 @@ class Queue:
         self.audit(piece_id, "draft_created", details={
             "scheduled_at": scheduled_at, "content_policy": content_policy,
             "collaborators": list(collaborators), "placement": placement,
+            "media_items_count": len(carousel_items),
         })
         return self.get(piece_id)
 
@@ -312,6 +323,18 @@ class Queue:
         self.connection.commit()
         self.audit(piece_id, "container_created", details={"container_id": container_id})
 
+    def record_child_container(self, piece_id: str, container_id: str) -> None:
+        item = self.get(piece_id)
+        child_ids = (*item.remote_child_container_ids, container_id)
+        self.connection.execute(
+            "UPDATE queue_items SET remote_child_container_ids_json=?,updated_at=? WHERE piece_id=?",
+            (json.dumps(child_ids), utc_now(), piece_id),
+        )
+        self.connection.commit()
+        self.audit(piece_id, "carousel_child_container_created", details={
+            "container_id": container_id, "child_index": len(child_ids) - 1,
+        })
+
     def record_story_baseline(self, piece_id: str, story_ids: set[str]) -> None:
         baseline = sorted(story_ids)
         self.connection.execute(
@@ -363,8 +386,12 @@ class Queue:
     def _row_to_item(self, row: sqlite3.Row) -> QueueItem:
         values = dict(row)
         values["collaborators"] = tuple(json.loads(values.pop("collaborators_json")))
+        values["media_items"] = tuple(json.loads(values.pop("media_items_json")))
         baseline = values.pop("story_baseline_json")
         values["story_baseline"] = None if baseline is None else tuple(json.loads(baseline))
+        values["remote_child_container_ids"] = tuple(json.loads(
+            values.pop("remote_child_container_ids_json")
+        ))
         return QueueItem(**values)
 
     def get(self, piece_id: str) -> QueueItem:
@@ -391,10 +418,18 @@ class Queue:
 
 
 def validate_payload(media: str, caption: str, scheduled_at: str,
-                     *, placement: str = "feed") -> None:
+                     *, placement: str = "feed",
+                     media_items: tuple[str, ...] = ()) -> None:
     validate_media_reference(media)
-    if placement == "feed" and not caption.strip():
+    if placement in {"feed", "carousel"} and not caption.strip():
         raise ValidationError("legenda não pode ser vazia")
+    if placement == "carousel":
+        if not 2 <= len(media_items) <= 10:
+            raise ValidationError("carrossel deve possuir de 2 a 10 mídias")
+        if media_items[0] != media:
+            raise ValidationError("a primeira mídia do carrossel deve ser o campo media")
+        for item in media_items:
+            validate_media_reference(item)
     if len(caption) > 2200:
         raise ValidationError("legenda excede 2.200 caracteres")
     parse_aware_datetime(scheduled_at)
@@ -522,6 +557,33 @@ class InstagramClient:
             raise InstagramAPIError("criação do contêiner de Story não retornou id")
         return container_id
 
+    def create_carousel_item(self, image_url: str) -> str:
+        payload = self._request(
+            "POST", "/" + urllib.parse.quote(self.credentials.user_id, safe="") + "/media",
+            {"image_url": image_url, "is_carousel_item": "true"},
+        )
+        container_id = payload.get("id")
+        if not isinstance(container_id, str) or not container_id:
+            raise InstagramAPIError("criação do item do carrossel não retornou id")
+        return container_id
+
+    def create_carousel_container(self, children: tuple[str, ...], caption: str,
+                                  collaborators: tuple[str, ...]) -> str:
+        parameters = {
+            "media_type": "CAROUSEL", "children": json.dumps(list(children)),
+            "caption": caption,
+        }
+        if collaborators:
+            parameters["collaborators"] = json.dumps(list(collaborators))
+        payload = self._request(
+            "POST", "/" + urllib.parse.quote(self.credentials.user_id, safe="") + "/media",
+            parameters,
+        )
+        container_id = payload.get("id")
+        if not isinstance(container_id, str) or not container_id:
+            raise InstagramAPIError("criação do contêiner do carrossel não retornou id")
+        return container_id
+
     def get_container_status(self, container_id: str) -> str:
         payload = self._request("GET", "/" + urllib.parse.quote(container_id, safe=""),
                                 {"fields": "status_code"})
@@ -608,7 +670,7 @@ class PublisherService:
                 environment: Mapping[str, str] = os.environ) -> dict[str, object]:
         item = self._approved_item(piece_id)
         validate_payload(item.media, item.caption, item.scheduled_at,
-                         placement=item.placement)
+                         placement=item.placement, media_items=item.media_items)
         username = self._confirm_account(
             self.client_type(Credentials.from_environment(environment))
         )
@@ -664,14 +726,16 @@ class PublisherService:
                 "publicação bloqueada: INSTAGRAM_PUBLISHING_ENABLED não é true"
             )
         validate_payload(item.media, item.caption, item.scheduled_at,
-                         placement=item.placement)
-        if urllib.parse.urlparse(item.media).scheme != "https":
+                         placement=item.placement, media_items=item.media_items)
+        public_media = item.media_items if item.placement == "carousel" else (item.media,)
+        if any(urllib.parse.urlparse(url).scheme != "https" for url in public_media):
             raise ValidationError("publicação real exige uma URL HTTPS pública da imagem")
         owner = self.queue.acquire_publish_lock(piece_id)
         try:
             client = self.client_type(Credentials.from_environment(environment))
             self._confirm_account(client)
-            self.media_validator.validate(item.media)
+            for media_url in public_media:
+                self.media_validator.validate(media_url)
             item = self.queue.get(piece_id)
             if item.placement == "story" and item.story_baseline is None:
                 self.queue.record_story_baseline(
@@ -685,6 +749,31 @@ class PublisherService:
             if not container_id:
                 if item.placement == "story":
                     container_id = client.create_story_container(item.media)
+                elif item.placement == "carousel":
+                    child_ids = list(item.remote_child_container_ids)
+                    for image_url in item.media_items[len(child_ids):]:
+                        child_id = client.create_carousel_item(image_url)
+                        self.queue.record_child_container(piece_id, child_id)
+                        child_ids.append(child_id)
+                    for child_id in child_ids:
+                        for attempt in range(12):
+                            child_status = client.get_container_status(child_id)
+                            if child_status == "FINISHED":
+                                break
+                            if child_status in {"ERROR", "EXPIRED"}:
+                                self.queue.mark_failed(piece_id, "container_failed")
+                                raise InstagramAPIError(
+                                    f"item do carrossel terminou com status {child_status}"
+                                )
+                            if attempt == 11:
+                                raise InstagramAPIError(
+                                    "item do carrossel ainda não ficou pronto; execução interrompida"
+                                )
+                            self.sleep(5)
+                    # Exatamente uma tentativa; rejeição do colaborador não tem fallback.
+                    container_id = client.create_carousel_container(
+                        tuple(child_ids), item.caption, item.collaborators
+                    )
                 else:
                     # Exatamente uma tentativa; rejeição de colaboradores não tem fallback.
                     container_id = client.create_image_container(
@@ -746,9 +835,11 @@ def build_parser() -> argparse.ArgumentParser:
     enqueue = commands.add_parser("enqueue", help="cria um item draft")
     enqueue.add_argument("--piece-id", required=True)
     enqueue.add_argument("--media", required=True)
+    enqueue.add_argument("--carousel-media", action="append", default=[],
+                         help="mídia adicional; repita para montar um carrossel")
     enqueue.add_argument("--caption", default="")
     enqueue.add_argument("--scheduled-at", required=True)
-    enqueue.add_argument("--placement", choices=("feed", "story"), default="feed")
+    enqueue.add_argument("--placement", choices=("feed", "story", "carousel"), default="feed")
     enqueue.add_argument("--content-policy", choices=sorted(CONTENT_POLICIES), default="other")
     approve = commands.add_parser("approve", help="aprova e registra o responsável")
     approve.add_argument("--piece-id", required=True)
@@ -770,6 +861,8 @@ def main(argv: list[str] | None = None) -> int:
             result = queue.enqueue(
                 arguments.piece_id, arguments.media, arguments.caption,
                 arguments.scheduled_at, arguments.content_policy, arguments.placement,
+                ((arguments.media, *arguments.carousel_media)
+                 if arguments.placement == "carousel" else ()),
             )
         elif arguments.command == "approve":
             result = queue.approve(arguments.piece_id, arguments.approved_by)

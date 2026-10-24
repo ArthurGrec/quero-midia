@@ -51,6 +51,18 @@ class FakeClient:
         self.calls.append(("create_story_container", image_url))
         return "story-container-123"
 
+    def create_carousel_item(self, image_url):
+        self.calls.append(("create_carousel_item", image_url))
+        return f"child-{len([c for c in self.calls if c[0] == 'create_carousel_item'])}"
+
+    def create_carousel_container(self, children, caption, collaborators):
+        self.calls.append((
+            "create_carousel_container", children, caption, collaborators,
+        ))
+        if type(self).reject_container:
+            raise InstagramAPIError("container rejected")
+        return "carousel-container-123"
+
     def get_container_status(self, container_id):
         self.calls.append(("get_container_status", container_id))
         return "FINISHED"
@@ -270,6 +282,54 @@ class PublisherSafetyTests(unittest.TestCase):
         self.assertEqual(len([call for call in calls if call[0] == "publish_container"]), 1)
         self.assertEqual(result.status, "published")
         self.assertEqual(result.remote_media_id, "story-reconciled")
+
+    def test_carousel_creates_children_parent_and_publishes_once(self):
+        urls = (
+            "https://cdn.example.com/slide-1.jpg",
+            "https://cdn.example.com/slide-2.jpg",
+        )
+        item = self.queue.enqueue(
+            "carousel-1", urls[0], "Legenda do carrossel",
+            "2030-01-01T12:00:00-03:00", "tourism_with_quero_abada",
+            "carousel", urls,
+        )
+        self.queue.approve(item.piece_id, "Arthur")
+        result = self.service.publish(item.piece_id, self.enabled_environment())
+        calls = FakeClient.instances[0].calls
+        self.assertEqual(
+            [call for call in calls if call[0] == "create_carousel_item"],
+            [("create_carousel_item", urls[0]), ("create_carousel_item", urls[1])],
+        )
+        parents = [call for call in calls if call[0] == "create_carousel_container"]
+        self.assertEqual(len(parents), 1)
+        self.assertEqual(parents[0][1], ("child-1", "child-2"))
+        self.assertEqual(parents[0][3], ("queroabada",))
+        self.assertEqual(
+            [call for call in calls if call[0] == "publish_container"],
+            [("publish_container", "carousel-container-123")],
+        )
+        self.assertEqual(self.validator.urls, list(urls))
+        self.assertEqual(result.status, "published")
+
+    def test_carousel_collaborator_rejection_has_no_degraded_retry(self):
+        urls = (
+            "https://cdn.example.com/slide-1.jpg",
+            "https://cdn.example.com/slide-2.jpg",
+        )
+        item = self.queue.enqueue(
+            "carousel-1", urls[0], "Legenda do carrossel",
+            "2030-01-01T12:00:00-03:00", "tourism_with_quero_abada",
+            "carousel", urls,
+        )
+        self.queue.approve(item.piece_id, "Arthur")
+        FakeClient.reject_container = True
+        with self.assertRaises(InstagramAPIError):
+            self.service.publish(item.piece_id, self.enabled_environment())
+        calls = FakeClient.instances[0].calls
+        self.assertEqual(
+            len([call for call in calls if call[0] == "create_carousel_container"]), 1
+        )
+        self.assertFalse(any(call[0] == "publish_container" for call in calls))
 
 
 if __name__ == "__main__":

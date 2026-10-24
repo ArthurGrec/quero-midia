@@ -38,6 +38,7 @@ As regras de colaboradores são codificadas em `--content-policy` para evitar di
 | `ship_sold_by_quero_abada` | `queroabada`, `queronavio` |
 | `carnival_lodging` | `queroabada` |
 | `ship_not_sold_by_quero_abada` | `queronavio` |
+| `tourism_with_quero_abada` | `queroabada` |
 | `other` | nenhum |
 
 ### Fluxo
@@ -73,6 +74,19 @@ python3 instagram_publisher.py audit
 
 O dry-run valida o estado, metadados de aprovação, JPEG local ou URL HTTPS, legenda (até 2.200 caracteres), horário com fuso, presença das credenciais, colaboradores derivados da política e a conta esperada `@quero.turismo`. Ele não cria contêiner de mídia e não publica.
 
+Para carrossel, use `--placement carousel`, informe a primeira imagem em `--media` e repita `--carousel-media` para as demais (de 2 a 10 imagens no total). Cada item é persistido e reconciliado; o contêiner pai recebe a legenda e os colaboradores obrigatórios:
+
+```bash
+python3 instagram_publisher.py enqueue \
+  --piece-id salvador-best-of-world-2027 \
+  --media 'https://exemplo/slide-1.jpg' \
+  --carousel-media 'https://exemplo/slide-2.jpg' \
+  --caption 'Legenda aprovada' \
+  --scheduled-at '2026-10-24T19:00:00-03:00' \
+  --placement carousel \
+  --content-policy tourism_with_quero_abada
+```
+
 Antes de uma execução autorizada, a mídia deve estar em URL HTTPS pública e retornar `image/jpeg` íntegro sem autenticação. Caminho local serve somente ao dry-run. A flag deve ser habilitada apenas no processo autorizado, sem ser gravada em arquivo:
 
 ```bash
@@ -80,7 +94,7 @@ INSTAGRAM_PUBLISHING_ENABLED=true \
   python3 instagram_publisher.py run --piece-id ID_APROVADO --execute
 ```
 
-O fluxo real confirma a conta e a mídia, procura uma publicação equivalente para reconciliação, reutiliza um `container_id` persistido quando existir, cria no máximo um contêiner, aguarda `FINISHED` e chama `media_publish` uma única vez. `container_id`, `media_id` e permalink são persistidos. Falha ambígua em `media_publish` muda o item para `failed` e nunca dispara repetição automática. Se a API rejeitar colaboradores, a execução para sem removê-los e sem publicar uma versão degradada. Uma trava com expiração impede duas execuções concorrentes.
+O fluxo real confirma a conta e a mídia, procura uma publicação equivalente para reconciliação, reutiliza IDs persistidos quando existirem, aguarda `FINISHED` e chama `media_publish` uma única vez. Em carrossel, os IDs dos itens filhos e do contêiner pai são persistidos separadamente. `container_id`, `media_id` e permalink são persistidos. Falha ambígua em `media_publish` muda o item para `failed` e nunca dispara repetição automática. Se a API rejeitar colaboradores, a execução para sem removê-los e sem publicar uma versão degradada. Uma trava com expiração impede duas execuções concorrentes.
 
 Uma nova tentativa após falha exige investigação, reconciliação por leitura e nova aprovação de Arthur. Nunca apague o banco para contornar as proteções de idempotência.
 
