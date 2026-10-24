@@ -6,9 +6,22 @@
 
 [Baixar todos os prints em ZIP](fluxo-completo.zip) · [Ver resumo visual](00-resumo-do-fluxo.png)
 
+## Imagens em alta resolução
+
+**[Abrir o painel completo em resolução original — 7.680 × 13.975 pixels (4,3 MB)](https://raw.githubusercontent.com/ArthurGrec/quero-midia/main/revisoes/47344821ebd04d688878c81195ad507c/fluxo-completo-alta-resolucao.png)**
+
+Abra o link da imagem original e amplie com os dedos para ler as telas. O painel foi refeito a partir dos prints originais, com as telas inteiras. Para carregar mais rápido no celular, abra uma etapa por vez:
+
+- [1. Atendimento e check-in](https://raw.githubusercontent.com/ArthurGrec/quero-midia/main/revisoes/47344821ebd04d688878c81195ad507c/fluxo-etapa-01-alta-resolucao.png)
+- [2. Impressão e preparação](https://raw.githubusercontent.com/ArthurGrec/quero-midia/main/revisoes/47344821ebd04d688878c81195ad507c/fluxo-etapa-02-alta-resolucao.png)
+- [3. Estoque e montagem](https://raw.githubusercontent.com/ArthurGrec/quero-midia/main/revisoes/47344821ebd04d688878c81195ad507c/fluxo-etapa-03-alta-resolucao.png)
+- [4. Entrega ao cliente](https://raw.githubusercontent.com/ArthurGrec/quero-midia/main/revisoes/47344821ebd04d688878c81195ad507c/fluxo-etapa-04-alta-resolucao.png)
+- [5. Relatórios e consulta rápida](https://raw.githubusercontent.com/ArthurGrec/quero-midia/main/revisoes/47344821ebd04d688878c81195ad507c/fluxo-etapa-05-alta-resolucao.png)
+- [6. Proteção contra duplicidade](https://raw.githubusercontent.com/ArthurGrec/quero-midia/main/revisoes/47344821ebd04d688878c81195ad507c/fluxo-etapa-06-alta-resolucao.png)
+
 ## Visão geral
 
-![Resumo visual das etapas da entrega](00-resumo-do-fluxo.png)
+![Fluxo completo em alta resolução; abra o link acima para ampliar](fluxo-completo-alta-resolucao.png)
 
 ## 1. Atendimento e check-in
 
