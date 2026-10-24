@@ -6,6 +6,16 @@
 
 [Baixar todos os prints em ZIP](fluxo-completo.zip) · [Ver resumo visual](00-resumo-do-fluxo.png)
 
+## Nova etapa: conferência consolidada dos documentos
+
+Depois de selecionar os pedidos, o atendente abre **Conferir documentos**. O resumo reúne os documentos exigidos sem repetir o que for comum: uma identidade e, neste exemplo, dois cartões de pagamento distintos. Cada documento mostra os pedidos que o exigem. É necessário conferir todos antes de confirmar a solicitação. A troca de seleção ou de exigências invalida a conferência anterior.
+
+[Ampliar a nova tela](conferencia-documentos.png) · [Ver no celular](conferencia-documentos-celular.png)
+
+![Conferência documental consolidada: uma identidade e dois cartões com seus pedidos](conferencia-documentos.png)
+
+Os documentos e cartões exibidos são fictícios. As regras reais de pagamento/titularidade ainda precisam ser integradas e homologadas. Os painéis gerais abaixo preservam as capturas anteriores a esta nova etapa.
+
 ## Imagens em alta resolução
 
 **[Abrir o painel completo em resolução original — 7.680 × 13.975 pixels (4,3 MB)](https://raw.githubusercontent.com/ArthurGrec/quero-midia/main/revisoes/47344821ebd04d688878c81195ad507c/fluxo-completo-alta-resolucao.png)**
