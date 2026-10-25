@@ -6,6 +6,18 @@
 
 [Baixar todos os prints em ZIP](fluxo-completo.zip) · [Ver resumo visual](00-resumo-do-fluxo.png)
 
+## Atualização: telas por função, sem menu lateral
+
+A interface atual abre diretamente a função do usuário. Atendimento, impressão, estoque, montagem e entrega têm acessos próprios, com permissões verificadas no servidor. Administradores usam um menu compacto. Os exemplos abaixo são fictícios.
+
+- [Atendimento no computador](atendimento-sem-menu.png)
+- [Impressão no computador](impressao-sem-menu.png)
+- [Atendimento no celular](atendimento-celular-sem-menu.png)
+
+![Atendimento com interface limpa](atendimento-sem-menu.png)
+
+Os relatórios agora executam em outro processo, com conexão SQLite somente leitura. O ensaio interrompeu os relatórios durante check-in, montagem e entrega e publicou/retornou um modelo de impressão sem reiniciar o núcleo. Testes de carga e impressoras reais continuam pendentes. As capturas abaixo preservam versões anteriores do protótipo.
+
 ## Nova etapa: conferência consolidada dos documentos
 
 Depois de selecionar os pedidos, o atendente abre **Conferir documentos**. O resumo reúne os documentos exigidos sem repetir o que for comum: uma identidade e, neste exemplo, dois cartões de pagamento distintos. Cada documento mostra os pedidos que o exigem. É necessário conferir todos antes de confirmar a solicitação. A troca de seleção ou de exigências invalida a conferência anterior.
