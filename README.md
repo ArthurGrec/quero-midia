@@ -87,7 +87,19 @@ python3 instagram_publisher.py enqueue \
   --content-policy tourism_with_quero_abada
 ```
 
-Antes de uma execução autorizada, a mídia deve estar em URL HTTPS pública e retornar `image/jpeg` íntegro sem autenticação. Caminho local serve somente ao dry-run. A flag deve ser habilitada apenas no processo autorizado, sem ser gravada em arquivo:
+Para Reel, use `--placement reel` e uma URL HTTPS pública para um arquivo MP4 válido. O publicador cria um contêiner `REELS`, compartilha no Feed, mantém legenda e colaboradores da política e continua chamando `media_publish` no máximo uma vez:
+
+```bash
+python3 instagram_publisher.py enqueue \
+  --piece-id reel-salvador \
+  --media 'https://exemplo/reel.mp4' \
+  --caption 'Legenda aprovada' \
+  --scheduled-at '2026-10-25T10:00:00-03:00' \
+  --placement reel \
+  --content-policy tourism_with_quero_abada
+```
+
+Antes de uma execução autorizada, a mídia deve estar em URL HTTPS pública e retornar JPEG íntegro para imagem ou contêiner MP4 válido para Reel, sempre sem autenticação. Caminho local serve somente ao dry-run. A flag deve ser habilitada apenas no processo autorizado, sem ser gravada em arquivo:
 
 ```bash
 INSTAGRAM_PUBLISHING_ENABLED=true \

@@ -51,6 +51,12 @@ class FakeClient:
         self.calls.append(("create_story_container", image_url))
         return "story-container-123"
 
+    def create_reel_container(self, video_url, caption, collaborators):
+        self.calls.append(("create_reel_container", video_url, caption, collaborators))
+        if type(self).reject_container:
+            raise InstagramAPIError("container rejected")
+        return "reel-container-123"
+
     def create_carousel_item(self, image_url):
         self.calls.append(("create_carousel_item", image_url))
         return f"child-{len([c for c in self.calls if c[0] == 'create_carousel_item'])}"
@@ -95,6 +101,10 @@ class FakeMediaValidator:
     def validate(self, url):
         self.urls.append(url)
         return {"http_status": 200, "content_type": "image/jpeg", "bytes": 100}
+
+    def validate_video(self, url):
+        self.urls.append(url)
+        return {"http_status": 200, "content_type": "video/mp4", "bytes": 100}
 
 
 class PublisherSafetyTests(unittest.TestCase):
@@ -328,6 +338,41 @@ class PublisherSafetyTests(unittest.TestCase):
         calls = FakeClient.instances[0].calls
         self.assertEqual(
             len([call for call in calls if call[0] == "create_carousel_container"]), 1
+        )
+        self.assertFalse(any(call[0] == "publish_container" for call in calls))
+
+    def test_reel_uses_video_path_and_required_collaborator(self):
+        item = self.queue.enqueue(
+            "reel-1", "https://cdn.example.com/reel.mp4", "Legenda do Reel",
+            "2030-01-01T12:00:00-03:00", "tourism_with_quero_abada", "reel",
+        )
+        self.queue.approve(item.piece_id, "Arthur")
+        result = self.service.publish(item.piece_id, self.enabled_environment())
+        calls = FakeClient.instances[0].calls
+        self.assertEqual(
+            [call for call in calls if call[0] == "create_reel_container"],
+            [("create_reel_container", "https://cdn.example.com/reel.mp4",
+              "Legenda do Reel", ("queroabada",))],
+        )
+        self.assertFalse(any(call[0] == "create_image_container" for call in calls))
+        self.assertEqual(
+            [call for call in calls if call[0] == "publish_container"],
+            [("publish_container", "reel-container-123")],
+        )
+        self.assertEqual(result.status, "published")
+
+    def test_reel_collaborator_rejection_has_no_degraded_retry(self):
+        item = self.queue.enqueue(
+            "reel-1", "https://cdn.example.com/reel.mp4", "Legenda do Reel",
+            "2030-01-01T12:00:00-03:00", "tourism_with_quero_abada", "reel",
+        )
+        self.queue.approve(item.piece_id, "Arthur")
+        FakeClient.reject_container = True
+        with self.assertRaises(InstagramAPIError):
+            self.service.publish(item.piece_id, self.enabled_environment())
+        calls = FakeClient.instances[0].calls
+        self.assertEqual(
+            len([call for call in calls if call[0] == "create_reel_container"]), 1
         )
         self.assertFalse(any(call[0] == "publish_container" for call in calls))
 

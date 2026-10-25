@@ -237,8 +237,8 @@ class Queue:
             raise ValidationError("identificador da peça é obrigatório")
         if content_policy not in CONTENT_POLICIES:
             raise ValidationError("política de conteúdo inválida")
-        if placement not in {"feed", "story", "carousel"}:
-            raise ValidationError("placement deve ser feed, story ou carousel")
+        if placement not in {"feed", "story", "carousel", "reel"}:
+            raise ValidationError("placement deve ser feed, story, carousel ou reel")
         carousel_items = tuple(media_items or ())
         validate_payload(media, caption, scheduled_at, placement=placement,
                          media_items=carousel_items)
@@ -421,7 +421,7 @@ def validate_payload(media: str, caption: str, scheduled_at: str,
                      *, placement: str = "feed",
                      media_items: tuple[str, ...] = ()) -> None:
     validate_media_reference(media)
-    if placement in {"feed", "carousel"} and not caption.strip():
+    if placement in {"feed", "carousel", "reel"} and not caption.strip():
         raise ValidationError("legenda não pode ser vazia")
     if placement == "carousel":
         if not 2 <= len(media_items) <= 10:
@@ -482,6 +482,34 @@ class PublicMediaValidator:
         if len(content) > 25 * 1024 * 1024:
             raise ValidationError("mídia pública excede 25 MiB")
         validate_jpeg(content, "mídia pública")
+        return {"http_status": status, "content_type": content_type, "bytes": len(content)}
+
+    def validate_video(self, url: str) -> dict[str, object]:
+        request = urllib.request.Request(
+            url, headers={
+                "Accept": "video/mp4,application/octet-stream",
+                "User-Agent": "quero-midia-validator/1",
+            }, method="GET",
+        )
+        try:
+            with urllib.request.build_opener(NoRedirects).open(request, timeout=60) as response:
+                content_type = response.headers.get_content_type()
+                content = response.read(100 * 1024 * 1024 + 1)
+                status = response.status
+        except urllib.error.HTTPError as exc:
+            raise ValidationError(f"vídeo público respondeu HTTP {exc.code}") from exc
+        except (urllib.error.URLError, TimeoutError) as exc:
+            raise ValidationError("não foi possível ler o vídeo público") from exc
+        if status != 200:
+            raise ValidationError(f"vídeo público respondeu HTTP {status}")
+        if content_type not in {"video/mp4", "application/octet-stream"}:
+            raise ValidationError(
+                f"vídeo público deve ser MP4, recebido {content_type}"
+            )
+        if len(content) > 100 * 1024 * 1024:
+            raise ValidationError("vídeo público excede 100 MiB")
+        if len(content) < 12 or content[4:8] != b"ftyp":
+            raise ValidationError("vídeo público não possui contêiner MP4 válido")
         return {"http_status": status, "content_type": content_type, "bytes": len(content)}
 
 
@@ -555,6 +583,23 @@ class InstagramClient:
         container_id = payload.get("id")
         if not isinstance(container_id, str) or not container_id:
             raise InstagramAPIError("criação do contêiner de Story não retornou id")
+        return container_id
+
+    def create_reel_container(self, video_url: str, caption: str,
+                              collaborators: tuple[str, ...]) -> str:
+        parameters = {
+            "video_url": video_url, "media_type": "REELS",
+            "caption": caption, "share_to_feed": "true",
+        }
+        if collaborators:
+            parameters["collaborators"] = json.dumps(list(collaborators))
+        payload = self._request(
+            "POST", "/" + urllib.parse.quote(self.credentials.user_id, safe="") + "/media",
+            parameters,
+        )
+        container_id = payload.get("id")
+        if not isinstance(container_id, str) or not container_id:
+            raise InstagramAPIError("criação do contêiner do Reel não retornou id")
         return container_id
 
     def create_carousel_item(self, image_url: str) -> str:
@@ -735,7 +780,10 @@ class PublisherService:
             client = self.client_type(Credentials.from_environment(environment))
             self._confirm_account(client)
             for media_url in public_media:
-                self.media_validator.validate(media_url)
+                if item.placement == "reel":
+                    self.media_validator.validate_video(media_url)
+                else:
+                    self.media_validator.validate(media_url)
             item = self.queue.get(piece_id)
             if item.placement == "story" and item.story_baseline is None:
                 self.queue.record_story_baseline(
@@ -749,6 +797,11 @@ class PublisherService:
             if not container_id:
                 if item.placement == "story":
                     container_id = client.create_story_container(item.media)
+                elif item.placement == "reel":
+                    # Exatamente uma tentativa; rejeição do colaborador não tem fallback.
+                    container_id = client.create_reel_container(
+                        item.media, item.caption, item.collaborators
+                    )
                 elif item.placement == "carousel":
                     child_ids = list(item.remote_child_container_ids)
                     for image_url in item.media_items[len(child_ids):]:
@@ -839,7 +892,7 @@ def build_parser() -> argparse.ArgumentParser:
                          help="mídia adicional; repita para montar um carrossel")
     enqueue.add_argument("--caption", default="")
     enqueue.add_argument("--scheduled-at", required=True)
-    enqueue.add_argument("--placement", choices=("feed", "story", "carousel"), default="feed")
+    enqueue.add_argument("--placement", choices=("feed", "story", "carousel", "reel"), default="feed")
     enqueue.add_argument("--content-policy", choices=sorted(CONTENT_POLICIES), default="other")
     approve = commands.add_parser("approve", help="aprova e registra o responsável")
     approve.add_argument("--piece-id", required=True)
