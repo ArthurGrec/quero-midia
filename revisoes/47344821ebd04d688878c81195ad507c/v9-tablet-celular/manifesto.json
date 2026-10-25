@@ -1,0 +1,631 @@
+{
+  "createdAt": "2026-10-25T14:26:43.856Z",
+  "version": "v9",
+  "fictionalData": true,
+  "profiles": [
+    {
+      "id": "tablet",
+      "name": "Tablet de 8 polegadas",
+      "width": 800,
+      "height": 1280
+    },
+    {
+      "id": "celular",
+      "name": "Celular",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "steps": [
+    {
+      "id": "01-identificar-cliente",
+      "phase": "Check-in",
+      "title": "Ler o voucher do cliente",
+      "caption": "O voucher do site identifica o cadastro. O atendente pode usar a câmera, o leitor USB ou o código.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/01-identificar-cliente.png",
+          "width": 1600,
+          "height": 2560
+        },
+        {
+          "profile": "celular",
+          "file": "celular/01-identificar-cliente.png",
+          "width": 780,
+          "height": 1688,
+          "fullFile": "celular/01-identificar-cliente-inteira.png"
+        }
+      ]
+    },
+    {
+      "id": "02-camera-voucher",
+      "phase": "Check-in",
+      "title": "Câmera pronta para ler o voucher",
+      "caption": "O leitor abre sobre a própria tela; foco e ajustes dependem dos recursos da câmera. A imagem deste registro é sintética.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/02-camera-voucher.png",
+          "width": 1600,
+          "height": 2560
+        },
+        {
+          "profile": "celular",
+          "file": "celular/02-camera-voucher.png",
+          "width": 780,
+          "height": 1688
+        }
+      ]
+    },
+    {
+      "id": "03-pedidos-do-cliente",
+      "phase": "Check-in",
+      "title": "Pedidos disponíveis e impedimentos",
+      "caption": "O mesmo cliente possui dois pedidos liberados. Os demais aparecem com os motivos que impedem a retirada.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/03-pedidos-do-cliente.png",
+          "width": 1600,
+          "height": 2560,
+          "fullFile": "tablet/03-pedidos-do-cliente-inteira.png"
+        },
+        {
+          "profile": "celular",
+          "file": "celular/03-pedidos-do-cliente.png",
+          "width": 780,
+          "height": 1688,
+          "fullFile": "celular/03-pedidos-do-cliente-inteira.png"
+        }
+      ]
+    },
+    {
+      "id": "04-pedidos-selecionados",
+      "phase": "Check-in",
+      "title": "Selecionar e conferir documentos",
+      "caption": "A ação segue para a conferência dos pedidos selecionados. Pedido já entregue ou bloqueado não é liberado.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/04-pedidos-selecionados.png",
+          "width": 1600,
+          "height": 2560,
+          "fullFile": "tablet/04-pedidos-selecionados-inteira.png"
+        },
+        {
+          "profile": "celular",
+          "file": "celular/04-pedidos-selecionados.png",
+          "width": 780,
+          "height": 1688,
+          "fullFile": "celular/04-pedidos-selecionados-inteira.png"
+        }
+      ]
+    },
+    {
+      "id": "05-documentos-consolidados",
+      "phase": "Check-in",
+      "title": "Identidade uma vez e cartões distintos",
+      "caption": "A conferência reúne a identidade comum e os dois cartões de pagamento exigidos pelos pedidos, com o vínculo de cada documento.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/05-documentos-consolidados.png",
+          "width": 1600,
+          "height": 2560,
+          "continuationFile": "tablet/05-documentos-consolidados-continuacao.png"
+        },
+        {
+          "profile": "celular",
+          "file": "celular/05-documentos-consolidados.png",
+          "width": 780,
+          "height": 1688,
+          "continuationFile": "celular/05-documentos-consolidados-continuacao.png"
+        }
+      ]
+    },
+    {
+      "id": "06-camera-foto-checkin",
+      "phase": "Check-in",
+      "title": "Fotografar no check-in",
+      "caption": "A captura fica dentro do atendimento. Esta demonstração usa uma imagem artificial; foto e facial têm exigências configuráveis.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/06-camera-foto-checkin.png",
+          "width": 1600,
+          "height": 2560
+        },
+        {
+          "profile": "celular",
+          "file": "celular/06-camera-foto-checkin.png",
+          "width": 780,
+          "height": 1688
+        }
+      ]
+    },
+    {
+      "id": "07-confirmar-foto-checkin",
+      "phase": "Check-in",
+      "title": "Conferir a foto antes de salvar",
+      "caption": "O atendente pode refazer ou salvar. A imagem é reduzida no aparelho conforme a configuração da retirada.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/07-confirmar-foto-checkin.png",
+          "width": 1600,
+          "height": 2560
+        },
+        {
+          "profile": "celular",
+          "file": "celular/07-confirmar-foto-checkin.png",
+          "width": 780,
+          "height": 1688
+        }
+      ]
+    },
+    {
+      "id": "08-solicitar-pedidos",
+      "phase": "Check-in",
+      "title": "Documentos conferidos e foto salva",
+      "caption": "A confirmação solicita os dois pedidos. Check-in e solicitação ainda não representam entrega ao cliente.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/08-solicitar-pedidos.png",
+          "width": 1600,
+          "height": 2560,
+          "continuationFile": "tablet/08-solicitar-pedidos-continuacao.png"
+        },
+        {
+          "profile": "celular",
+          "file": "celular/08-solicitar-pedidos.png",
+          "width": 780,
+          "height": 1688,
+          "continuationFile": "celular/08-solicitar-pedidos-continuacao.png"
+        }
+      ]
+    },
+    {
+      "id": "09-vouchers-52mm",
+      "phase": "Check-in",
+      "title": "Um voucher de 52 mm por pedido",
+      "caption": "Dois pedidos solicitados geram dois vouchers. É a prévia de impressão; nenhuma impressora física é acionada nesta captura.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/09-vouchers-52mm.png",
+          "width": 1600,
+          "height": 2560
+        },
+        {
+          "profile": "celular",
+          "file": "celular/09-vouchers-52mm.png",
+          "width": 780,
+          "height": 1688,
+          "fullFile": "celular/09-vouchers-52mm-inteira.png"
+        }
+      ]
+    },
+    {
+      "id": "10-fila-impressao",
+      "phase": "Impressão",
+      "title": "Assumir o próximo pedido",
+      "caption": "O posto de impressão aparece antes da fila, com a ação principal em destaque.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/10-fila-impressao.png",
+          "width": 1600,
+          "height": 2560
+        }
+      ]
+    },
+    {
+      "id": "11-pedido-reservado",
+      "phase": "Impressão",
+      "title": "Pedido reservado para este operador",
+      "caption": "A reserva evita dois operadores assumirem simultaneamente o mesmo trabalho de impressão.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/11-pedido-reservado.png",
+          "width": 1600,
+          "height": 2560
+        }
+      ]
+    },
+    {
+      "id": "12-pedido-80mm",
+      "phase": "Impressão",
+      "title": "Impresso de montagem com QR de entrega",
+      "caption": "O documento de 80 mm acompanha o pacote. Seu QR dedicado identifica o pedido para a confirmação final.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/12-pedido-80mm.png",
+          "width": 1600,
+          "height": 2560
+        }
+      ]
+    },
+    {
+      "id": "13-impressao-confirmada",
+      "phase": "Impressão",
+      "title": "Impressão confirmada para montagem",
+      "caption": "Confirmar a impressão mantém a entrega física pendente.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/13-impressao-confirmada.png",
+          "width": 1600,
+          "height": 2560
+        }
+      ]
+    },
+    {
+      "id": "14-entrada-estoque",
+      "phase": "Estoque",
+      "title": "Registrar entrada no estoque central",
+      "caption": "Recebimento de camisas, cartões e pulseiras com quantidade, fornecedor, motivo e referência.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/14-entrada-estoque.png",
+          "width": 1600,
+          "height": 2560,
+          "fullFile": "tablet/14-entrada-estoque-inteira.png"
+        },
+        {
+          "profile": "celular",
+          "file": "celular/14-entrada-estoque.png",
+          "width": 780,
+          "height": 1688,
+          "fullFile": "celular/14-entrada-estoque-inteira.png"
+        }
+      ]
+    },
+    {
+      "id": "15-estoque-central",
+      "phase": "Estoque",
+      "title": "Peças recebidas no estoque central",
+      "caption": "As 40 peças do lote estão no central. Impressão e importação de pedido não criam saldo físico.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/15-estoque-central.png",
+          "width": 1600,
+          "height": 2560
+        },
+        {
+          "profile": "celular",
+          "file": "celular/15-estoque-central.png",
+          "width": 780,
+          "height": 1688,
+          "fullFile": "celular/15-estoque-central-inteira.png"
+        }
+      ]
+    },
+    {
+      "id": "16-abastecer-araras",
+      "phase": "Estoque",
+      "title": "Abastecer as araras",
+      "caption": "Transferência do estoque central para as araras de montagem, com registro de origem e destino.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/16-abastecer-araras.png",
+          "width": 1600,
+          "height": 2560,
+          "fullFile": "tablet/16-abastecer-araras-inteira.png"
+        },
+        {
+          "profile": "celular",
+          "file": "celular/16-abastecer-araras.png",
+          "width": 780,
+          "height": 1688,
+          "fullFile": "celular/16-abastecer-araras-inteira.png"
+        }
+      ]
+    },
+    {
+      "id": "17-araras-abastecidas",
+      "phase": "Estoque",
+      "title": "Central e araras com saldos separados",
+      "caption": "O total continua em 40 peças: 20 no central e 20 nas araras.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/17-araras-abastecidas.png",
+          "width": 1600,
+          "height": 2560
+        },
+        {
+          "profile": "celular",
+          "file": "celular/17-araras-abastecidas.png",
+          "width": 780,
+          "height": 1688,
+          "fullFile": "celular/17-araras-abastecidas-inteira.png"
+        }
+      ]
+    },
+    {
+      "id": "18-conferir-montagem",
+      "phase": "Montagem",
+      "title": "Conferir os componentes e montar",
+      "caption": "A equipe vê pedido, cliente e componentes. A confirmação registra a separação física para o local de montados.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/18-conferir-montagem.png",
+          "width": 1600,
+          "height": 2560
+        }
+      ]
+    },
+    {
+      "id": "19-pedido-montado",
+      "phase": "Montagem",
+      "title": "Pacote montado, ainda não entregue",
+      "caption": "A montagem move as peças das araras para os pedidos montados. O checkout permanece pendente.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/19-pedido-montado.png",
+          "width": 1600,
+          "height": 2560
+        }
+      ]
+    },
+    {
+      "id": "20-saldo-montados",
+      "phase": "Estoque",
+      "title": "Acompanhar os pacotes montados",
+      "caption": "O estoque distingue peças no central, nas araras e já separadas em pedidos.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/20-saldo-montados.png",
+          "width": 1600,
+          "height": 2560
+        },
+        {
+          "profile": "celular",
+          "file": "celular/20-saldo-montados.png",
+          "width": 780,
+          "height": 1688,
+          "fullFile": "celular/20-saldo-montados-inteira.png"
+        }
+      ]
+    },
+    {
+      "id": "21-checkout-inicial",
+      "phase": "Checkout",
+      "title": "Conferir com o cliente e ler o QR de 80 mm",
+      "caption": "O checkout oferece câmera e leitor USB. Esta versão confirma a entrega pelo QR do pedido; chegada de 52 mm e pareamento do facilitador ainda não estão implementados.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/21-checkout-inicial.png",
+          "width": 1600,
+          "height": 2560
+        },
+        {
+          "profile": "celular",
+          "file": "celular/21-checkout-inicial.png",
+          "width": 780,
+          "height": 1688,
+          "fullFile": "celular/21-checkout-inicial-inteira.png"
+        }
+      ]
+    },
+    {
+      "id": "22-camera-qr-80mm",
+      "phase": "Checkout",
+      "title": "Leitura do QR do pacote",
+      "caption": "A leitura é feita na câmera do próprio aparelho. O QR do cliente e o voucher de 52 mm não confirmam a entrega.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/22-camera-qr-80mm.png",
+          "width": 1600,
+          "height": 2560
+        },
+        {
+          "profile": "celular",
+          "file": "celular/22-camera-qr-80mm.png",
+          "width": 780,
+          "height": 1688
+        }
+      ]
+    },
+    {
+      "id": "23-foto-checkout",
+      "phase": "Checkout",
+      "title": "Foto no momento da entrega",
+      "caption": "Com a exigência de foto ativada, a entrega aguarda a captura e a confirmação. Nesta versão a foto de checkout é por pedido.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/23-foto-checkout.png",
+          "width": 1600,
+          "height": 2560
+        },
+        {
+          "profile": "celular",
+          "file": "celular/23-foto-checkout.png",
+          "width": 780,
+          "height": 1688
+        }
+      ]
+    },
+    {
+      "id": "24-confirmar-foto-checkout",
+      "phase": "Checkout",
+      "title": "Conferir a foto da entrega",
+      "caption": "É possível refazer antes de salvar. Cancelar a foto não conclui a entrega.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/24-confirmar-foto-checkout.png",
+          "width": 1600,
+          "height": 2560
+        },
+        {
+          "profile": "celular",
+          "file": "celular/24-confirmar-foto-checkout.png",
+          "width": 780,
+          "height": 1688
+        }
+      ]
+    },
+    {
+      "id": "25-entrega-confirmada",
+      "phase": "Checkout",
+      "title": "Entrega confirmada e próximo pedido",
+      "caption": "Cliente, pedido, produtos, operador e horário aparecem no resultado, com atalhos para a próxima leitura.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/25-entrega-confirmada.png",
+          "width": 1600,
+          "height": 2560,
+          "fullFile": "tablet/25-entrega-confirmada-inteira.png"
+        },
+        {
+          "profile": "celular",
+          "file": "celular/25-entrega-confirmada.png",
+          "width": 780,
+          "height": 1688,
+          "fullFile": "celular/25-entrega-confirmada-inteira.png"
+        }
+      ]
+    },
+    {
+      "id": "26-protecao-duplicidade",
+      "phase": "Checkout",
+      "title": "Uma releitura preserva a entrega original",
+      "caption": "O pedido aparece como já entregue. A nova leitura não gera outra entrega, foto ou baixa de estoque.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/26-protecao-duplicidade.png",
+          "width": 1600,
+          "height": 2560,
+          "fullFile": "tablet/26-protecao-duplicidade-inteira.png"
+        },
+        {
+          "profile": "celular",
+          "file": "celular/26-protecao-duplicidade.png",
+          "width": 780,
+          "height": 1688,
+          "fullFile": "celular/26-protecao-duplicidade-inteira.png"
+        }
+      ]
+    },
+    {
+      "id": "27-historico-estoque",
+      "phase": "Estoque",
+      "title": "Histórico da entrega e dos movimentos",
+      "caption": "A baixa do pacote fica vinculada ao pedido, ao operador e ao horário. Os movimentos anteriores permanecem registrados.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/27-historico-estoque.png",
+          "width": 1600,
+          "height": 2560,
+          "fullFile": "tablet/27-historico-estoque-inteira.png"
+        },
+        {
+          "profile": "celular",
+          "file": "celular/27-historico-estoque.png",
+          "width": 780,
+          "height": 1688,
+          "fullFile": "celular/27-historico-estoque-inteira.png"
+        }
+      ]
+    },
+    {
+      "id": "28-relatorio-entregas",
+      "phase": "Relatórios",
+      "title": "Entregas com produtos, operador e horário",
+      "caption": "Relatório da entrega concluída e acesso às pendências. A tela roda no módulo de relatórios.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/28-relatorio-entregas.png",
+          "width": 1600,
+          "height": 2560,
+          "fullFile": "tablet/28-relatorio-entregas-inteira.png"
+        }
+      ]
+    },
+    {
+      "id": "29-relatorio-produto",
+      "phase": "Relatórios",
+      "title": "Retirados e faltantes por produto",
+      "caption": "A relação separa o que já foi retirado, o que falta retirar e os cancelados.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/29-relatorio-produto.png",
+          "width": 1600,
+          "height": 2560,
+          "fullFile": "tablet/29-relatorio-produto-inteira.png"
+        }
+      ]
+    },
+    {
+      "id": "30-detalhe-produto",
+      "phase": "Relatórios",
+      "title": "Quem retirou e quem ainda falta",
+      "caption": "Detalhamento por cliente e pedido, com data, horário, operador e abertura rápida.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/30-detalhe-produto.png",
+          "width": 1600,
+          "height": 2560,
+          "fullFile": "tablet/30-detalhe-produto-inteira.png"
+        }
+      ]
+    },
+    {
+      "id": "31-pedido-completo",
+      "phase": "Relatórios",
+      "title": "Abrir o pedido completo",
+      "caption": "A consulta rápida mantém o nome do cliente e todos os produtos do pedido, mesmo partindo de um produto do relatório.",
+      "images": [
+        {
+          "profile": "tablet",
+          "file": "tablet/31-pedido-completo.png",
+          "width": 1600,
+          "height": 2560
+        }
+      ]
+    }
+  ],
+  "active": {
+    "atendimento": "v9",
+    "impressao": "v9",
+    "operacoes": "v6",
+    "estoque": "v9",
+    "montagem": "v9",
+    "entregas": "v9",
+    "relatorios": "v9",
+    "impressos": "v1",
+    "admin": "v1",
+    "login": "v1"
+  },
+  "pending": [
+    "Chegada no checkout com voucher de 52 mm",
+    "Pareamento 52+80 e repasse do facilitador",
+    "Foto de checkout compartilhada entre vários pedidos",
+    "Homologação em aparelhos e impressoras físicos"
+  ],
+  "validation": {
+    "deliveries": 1,
+    "stockTotal": 34,
+    "noPageErrors": true
+  }
+}

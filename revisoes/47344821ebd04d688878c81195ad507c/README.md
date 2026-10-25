@@ -1,5 +1,10 @@
 # Quero Entregas 2.0 — Fluxo completo de entrega
 
+## Nova versão: tablet e celular — 25/10/2026
+
+**[Abrir o fluxo v9 no tablet de 8 polegadas e no celular](v9-tablet-celular/README.md)** — 31 etapas no tablet e 21 no celular, com fotos, documentos consolidados e estoque.
+
+
 19 telas reais do protótipo, com dados fictícios. Acompanhe a leitura do voucher, check-in, impressão, montagem, entrega e relatórios. Toque em uma imagem para ampliar.
 
 **Pedido de demonstração #41001:** Ana Demonstração · 1 Camarote Horizonte + 2 Bloco Aurora.
