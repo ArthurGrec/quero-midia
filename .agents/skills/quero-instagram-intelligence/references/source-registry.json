@@ -1,0 +1,61 @@
+{
+  "updated_at": "2026-10-27",
+  "owned": [
+    {"username": "quero.turismo", "role": "turismo", "insights_access": true},
+    {"username": "queroabada", "role": "carnaval", "insights_access": false},
+    {"username": "queronavio", "role": "cruzeiros", "insights_access": false}
+  ],
+  "commercial_benchmark": [
+    {"username": "centraldocarnaval", "type": "direct_competitor", "scope": "carnaval"},
+    {"username": "foliabahia", "type": "direct_competitor", "scope": "carnaval"},
+    {"username": "vialegria", "type": "direct_competitor", "scope": "agencia ligada ao ecossistema da Central do Carnaval"},
+    {"username": "ticketmaker", "type": "partial_competitor", "scope": "somente carnaval"}
+  ],
+  "influencers": [
+    {"username": "ronisilvapersonal", "type": "influencer"},
+    {"username": "queromaisfevereiro", "type": "influencer"}
+  ],
+  "artists": [
+    {"username": "babado_novo", "priority": "high", "association": "Cha da Alice"},
+    {"username": "bandaeva", "priority": "high", "association": "Eva"},
+    {"username": "bellmarques", "priority": "high", "association": "Bloco da Quinta, Vumbora, Camaleao"},
+    {"username": "carlacristinaoficial", "priority": "high", "association": "Vem Comigo", "association_status": "confirmar"},
+    {"username": "claudialeitte", "priority": "high", "association": "Largadinho"},
+    {"username": "danielamercury", "priority": "high", "association": "Crocodilo"},
+    {"username": "durvallelys", "priority": "high", "association": "Me Abraca"},
+    {"username": "eotchanoficial", "priority": "high", "association": "Os Internacionais", "association_status": "confirmar"},
+    {"username": "ivetesangalo", "priority": "high", "association": "Coruja"},
+    {"username": "leosantana", "priority": "high", "association": "Bloco do Nana"},
+    {"username": "timbaladaoficial", "priority": "high", "association": "Timbalada"},
+    {"username": "tomkray", "priority": "high", "association": "Fissura"},
+    {"username": "xanddy", "priority": "high", "association": "Bloco da Torcida"}
+  ],
+  "blocks": [
+    {"username": "blococamaleaooficial", "priority": "medium"},
+    {"username": "blococorujaoficial", "priority": "medium"},
+    {"username": "blococrocodilo", "priority": "medium"},
+    {"username": "blocodaquinta", "priority": "medium", "official_status": "confirmar"},
+    {"username": "blocodatorcidaoficial", "priority": "medium"},
+    {"username": "blocodonana", "priority": "medium", "official_status": "confirmar"},
+    {"username": "blocoevaoficial", "priority": "medium"},
+    {"username": "blocofissura77", "priority": "medium"},
+    {"username": "blocolargadinhofortal", "priority": "medium"},
+    {"username": "blocomeabraca", "priority": "medium", "official_status": "confirmar"},
+    {"username": "blocopraieiro", "priority": "medium", "official_status": "confirmar"},
+    {"username": "blocotimbaladaoficial", "priority": "medium"},
+    {"username": "blocovumboraoficial", "priority": "medium"}
+  ],
+  "camarotes": [
+    {"username": "camarotebaiano", "priority": "medium", "official_status": "confirmar"},
+    {"username": "camarotebrahmasalvador", "priority": "medium"},
+    {"username": "camarotecluboficial", "priority": "medium"},
+    {"username": "camarotedabarra", "priority": "medium", "official_status": "confirmar"},
+    {"username": "camaroteharemsoho", "priority": "medium"},
+    {"username": "camarotesalvadoroficial", "priority": "medium"},
+    {"username": "camarotevillasalvador", "priority": "medium"},
+    {"username": "glamoursalvador", "priority": "medium"}
+  ],
+  "related_events": [
+    {"username": "chadaalice", "type": "event", "priority": "medium"}
+  ]
+}

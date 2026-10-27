@@ -4,6 +4,12 @@ Repositório de peças de mídia do Quero Turismo.
 
 ## Publicador seguro do Instagram
 
+### Inteligência editorial
+
+A skill local `.agents/skills/quero-instagram-intelligence/` organiza análise de Insights, benchmark de Carnaval e planejamento semanal. Ela mantém perfis próprios, concorrentes, artistas, blocos, camarotes e influenciadores separados por função, exige fontes verificáveis e preserva duas aprovações: uma antes da criação e outra antes da publicação.
+
+Os diagnósticos e calendários ficam em `estrategia-instagram/`. Dados privados, tokens, bancos da fila e respostas brutas da API não devem ser gravados ou versionados.
+
 `instagram_publisher.py` mantém uma fila persistente em SQLite e opera em **dry-run por padrão**. A execução real exige simultaneamente estado `approved`, aprovação registrada por `Arthur`, `INSTAGRAM_PUBLISHING_ENABLED=true` e a opção explícita `run --execute`.
 
 Requisitos: Python 3.11+ e nenhuma dependência externa. As credenciais são lidas somente em tempo de execução:
