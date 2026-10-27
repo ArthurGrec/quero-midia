@@ -10,10 +10,11 @@ Use esta skill quando Arthur pedir análise de perfil, benchmark, tendências, p
 ## Fontes obrigatórias
 
 1. Leia `references/source-registry.json`.
-2. Para métricas próprias, use somente leitura na API e mantenha `INSTAGRAM_USER_ID` e `INSTAGRAM_ACCESS_TOKEN` apenas em runtime. Nunca imprima o token.
-3. Para concorrentes e referências, use somente conteúdo publicamente acessível, links, capturas ou exportações fornecidas por Arthur.
-4. Se a API não entregar métricas de terceiros, declare a limitação. Nunca estime curtidas, alcance, salvamentos, compartilhamentos ou retenção.
-5. Separe fatos confirmados, sinais observados e hipóteses editoriais.
+2. Leia o benchmark mais recente em `estrategia-instagram/benchmark/`, quando existir, e valide suas conclusões contra a base tabular antes de reutilizá-las.
+3. Para métricas próprias, use somente leitura na API e mantenha `INSTAGRAM_USER_ID` e `INSTAGRAM_ACCESS_TOKEN` apenas em runtime. Nunca imprima o token.
+4. Para concorrentes e referências, use somente conteúdo publicamente acessível, links, capturas ou exportações fornecidas por Arthur.
+5. Se a API não entregar métricas de terceiros, declare a limitação. Nunca estime curtidas, alcance, salvamentos, compartilhamentos ou retenção.
+6. Separe fatos confirmados, sinais observados e hipóteses editoriais.
 
 ## Classificação das fontes
 
@@ -38,6 +39,8 @@ Para o perfil próprio, compare ao menos:
 Considere viral um conteúdo que fique claramente acima da mediana do próprio perfil. Quando houver dados suficientes, use múltiplos de mediana e velocidade nas primeiras 24 e 72 horas. Não chame de viral apenas por ter muitas curtidas.
 
 No benchmark público, observe formato, frequência, tema, oferta, linguagem, identidade, velocidade aparente, comentários e sinais públicos de compartilhamento. Inspire-se no mecanismo; nunca copie arte, texto ou conceito distintivo.
+
+Não compare perfis com campos indisponíveis como se fossem zeros. Prefira medianas a médias e destaque posts fora da curva antes de formular conclusões.
 
 ## Saída editorial
 

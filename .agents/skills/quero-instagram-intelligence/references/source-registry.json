@@ -8,8 +8,9 @@
   "commercial_benchmark": [
     {"username": "centraldocarnaval", "type": "direct_competitor", "scope": "carnaval"},
     {"username": "foliabahia", "type": "direct_competitor", "scope": "carnaval"},
-    {"username": "vialegria", "type": "direct_competitor", "scope": "agencia ligada ao ecossistema da Central do Carnaval"},
-    {"username": "ticketmaker", "type": "partial_competitor", "scope": "somente carnaval"}
+    {"username": "vialegria", "type": "direct_competitor", "scope": "agencia ligada ao ecossistema da Central do Carnaval", "status": "username_incorreto_ou_homonimo"},
+    {"username": "viaalegria", "type": "candidate_competitor", "scope": "candidato com dominio viaalegria.com.br; atividade retornada somente ate 2021", "status": "aguarda_confirmacao"},
+    {"username": "ticketmaker", "type": "partial_competitor", "scope": "somente carnaval", "status": "username_incorreto_ou_homonimo"}
   ],
   "influencers": [
     {"username": "ronisilvapersonal", "type": "influencer"},
