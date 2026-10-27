@@ -2,7 +2,7 @@
   "updated_at": "2026-10-27",
   "owned": [
     {"username": "quero.turismo", "role": "turismo", "insights_access": true},
-    {"username": "queroabada", "role": "carnaval", "insights_access": false},
+    {"username": "queroabada", "role": "carnaval", "insights_access": true, "instagram_user_id": "17841401795278914"},
     {"username": "queronavio", "role": "cruzeiros", "insights_access": false}
   ],
   "commercial_benchmark": [
