@@ -6,7 +6,9 @@ Colaborador sugerido: `queroabada`
 
 Status do Feed: aprovado por Arthur em 27/10/2026.
 
-Status do Story: não autorizado nesta aprovação; aguarda definição de link clicável ou autorização específica.
+Status do Story: aprovado por Arthur em 27/10/2026 exclusivamente para `@queroabada`, condicionado à inclusão do link clicável abaixo.
+
+Link do Story: https://www.queroabada.com.br/hospedagem-carnaval-salvador
 
 Faltam 100 dias para o Carnaval de Salvador! 🎭✈️
 
@@ -25,4 +27,4 @@ Tá na hora de garantir seu Carnaval! Fale com a equipe pelo WhatsApp: (71) 9916
 
 ## Story
 
-Rascunho visual pronto. Antes da publicação, definir e validar o link clicável aplicável à campanha.
+Arte aprovada. Não publicar pela API sem suporte confirmado ao link clicável; não publicar versão degradada sem link.
